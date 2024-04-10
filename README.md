@@ -11,11 +11,20 @@ Install dependencies:
 
 `mkdir build_Release && cd build_Release && cmake -DCMAKE_BUILD_TYPE=release .. && make -j`
 
+## Downloading Dataset
+Please refer to the [SOSD](https://github.com/learnedsystems/SOSD) paper to get the SOSD Dataset. Benchmarking under the SOSD Databaset can be done using bench_dataset.sh script. The dataset must be stored in data folder.
+
 ## Running benchmark
 bechmark scripts are in testbench folder. Scripts are bench_<>.sh. The config files are with .cfg extension and some example config can be found in the repo.
 
 The experiment can be run using following command.
 `bench_<>.sh <>.cfg <exp_name>`
+
+Appropriate disk file should be created before running the experiments.
+
+- bench_learnstore.sh :: script to measure leanstore and learnstore on created workload
+- bench_latency.sh :: script to measure the latency
+- bench_dataset.sh :: read only throughput experiments
 
 ## Cite
 The code we used for our HDIS 2023 paper

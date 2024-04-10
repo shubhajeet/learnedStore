@@ -221,7 +221,7 @@ class BMC
   public:
    static BufferManager* global_bf;
    static ska::flat_hash_map<PID, std::vector<size_t>> attached_segments;
-   static ska::flat_hash_map<PID, learnedindex<size_t>> leaf_node_models;
+   static ska::flat_hash_map<PID, learnedindex<KEY>> leaf_node_models;
 };
 }  // namespace storage
 }  // namespace leanstore

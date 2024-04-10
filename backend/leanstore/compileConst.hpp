@@ -37,5 +37,5 @@
 // #define SIMULATE_BUFFERPOOL_MISS
 #define MISS_PROB 0.01
 
-// using KEY = uint32_t;
-using KEY = uint64_t;
+using KEY = uint32_t;
+// using KEY = uint64_t;

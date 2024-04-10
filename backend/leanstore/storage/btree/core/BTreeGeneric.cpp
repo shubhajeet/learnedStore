@@ -830,8 +830,7 @@ s64 BTreeGeneric::iterateAllPagesRecWithoutCheck(HybridPageGuard<BTreeNode>& nod
       // node_guard.recheck();
       DEBUG_BLOCK()
       {
-         std::cout << "Ignoring index: upper"
-                   << " pid " << node_guard.bf->header.pid << LINE_NO() << std::endl;
+         std::cout << "Ignoring index: upper" << " pid " << node_guard.bf->header.pid << LINE_NO() << std::endl;
       }
    }
    res += c_res;
@@ -917,7 +916,7 @@ bool BTreeGeneric::learnedIndexStore()
    splines.store(spline_predictor.spline_points_);
    store_map(attached_segments_file, attached_segments);
 #ifdef MODEL_IN_LEAF_NODE
-   std::cout << "Leaf node modes: " << leaf_node_models.size() << std::endl;
+   std::cout << "Leaf node models: " << leaf_node_models.size() << std::endl;
    store_models_to_file<KEY>(secondary_mapping_file + ".leaf", leaf_node_models);
 #endif
    return true;
