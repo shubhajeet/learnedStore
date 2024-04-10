@@ -1,5 +1,5 @@
-# LearnStore
-[LearnStore](https://jiangs.utasites.cloud/pubs/papers/Maharjan23-LearnedStore.pdf) uses learned index to accelerate search in btree based KV database. The project has been adapted from [LeanStore](https://db.in.tum.de/~leis/papers/leanstore.pdf), a high-performance OLTP storage engine optimized for many-core CPUs and NVMe SSDs. 
+# LearnedStore
+[LearnedStore](https://jiangs.utasites.cloud/pubs/papers/Maharjan23-LearnedStore.pdf) uses learned index to accelerate search in btree based KV database. The project has been adapted from [LeanStore](https://db.in.tum.de/~leis/papers/leanstore.pdf), a high-performance OLTP storage engine optimized for many-core CPUs and NVMe SSDs. 
 
 ## Compiling
 Install dependencies:
