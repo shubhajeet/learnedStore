@@ -26,6 +26,42 @@ Appropriate disk file should be created before running the experiments.
 - bench_latency.sh :: script to measure the latency
 - bench_dataset.sh :: read only throughput experiments
 
+## Experiment Figure Regeneration
+1. Figure 2
+```bash
+./bench_learnstore.sh 200M.cfg read
+./bench_learnstore.sh 200M.cfg readseg
+```
+
+2. Figure 3 : Measuring latency
+Create SSD Dataset
+```bash
+./bench_learnstore.sh 200M_512b.cfg create
+```
+Measure latency
+```bash
+./bench_latency.sh 200M_512b.cfg read | tee /tmp/leanstore_cold_latency.log
+./bench_latency.sh 200M_512b.cfg readseg | tee /tmp/learnstore_cold_latency.log
+```
+Convert to csv
+```bash
+grep latency: leanstore_cold_latency.log | cut -d' ' -f 2 | tee leanstore_cold_latency.log
+```
+Create graphs using experiments/percentile.ipynb
+
+3. Figure 4 : The figure can be created using the dot file: experiment/state.dot
+4. Figure 5 : Read only workload throughput
+Read only throughput. Auto train should be disabled.
+```bash
+./bench_dataset.sh 200M.cfg lineargen
+./bench_dataset.sh 200M.cfg randomgen
+./bench_dataset.sh 200M.cfg pieceLinear
+./bench_dataset.sh 200M.cfg amzn
+./bench_dataset.sh 200M.cfg fb
+./bench_dataset.sh 200M.cfg logn
+./bench_dataset.sh 200M.cfg norm
+```
+
 ## Cite
 The code we used for our HDIS 2023 paper
 
