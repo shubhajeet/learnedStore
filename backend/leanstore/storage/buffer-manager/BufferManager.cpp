@@ -21,7 +21,9 @@
 
 #include <chrono>
 #include <fstream>
+#ifdef INSTRUMENT_CODE
 #include <functiontimer.hpp>
+#endif
 #include <iomanip>
 #include <leanstore/storage/btree/core/BTreeNode.hpp>
 #include <set>

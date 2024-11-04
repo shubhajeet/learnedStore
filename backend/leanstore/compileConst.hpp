@@ -17,14 +17,14 @@
 // #define INSERT_MODEL_IN_LEAF_NODE
 #define MODEL_IN_LEAF_NODE
 #define MODEL_SEG
-#define MODEL_RS
-#define MODEL_RMI
+// #define MODEL_RS
+// #define MODEL_RMI
 #define MODEL_LR
 #define RS_EXPONENTIAL_SEARCH
 #define RMI_EXPONENTIAL_SEARCH
 #define LR_EXPONENTIAL_SEARCH
 #define EXPONENTIAL_SEARCH
-// #define AUTO_TRAIN
+#define AUTO_TRAIN
 #define SMO_STATS
 #define COMPACT_MAPPING
 // #define SEGMENT_STATS

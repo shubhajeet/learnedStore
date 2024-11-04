@@ -8,7 +8,9 @@
 #include "leanstore/utils/binarySearchSIMD.hpp"
 #include "leanstore/utils/map_io.hpp"
 #include "leanstore/utils/vectorstore.hpp"
+#ifdef INSTRUMENT_CODE
 #include "timer.hpp"
+#endif
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------

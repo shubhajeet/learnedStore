@@ -43,10 +43,8 @@
 #include "leanstore/utils/RandomGenerator.hpp"
 #include "leanstore/utils/ScrambledZipfGenerator.hpp"
 // === RadixSpline ===
-#include "rs/builder.h"
-#include "rs/radix_spline.h"
-// === RMI ===
-#include "rmi.h"
+// #include "rs/builder.h"
+// #include "rs/radix_spline.h"
 
 using namespace leanstore;
 using namespace util;
@@ -406,8 +404,7 @@ class Benchmark
    LeanStore db;
    unique_ptr<BTreeInterface<YCSBKey, YCSBPayload>> adapter;
    leanstore::storage::btree::BTreeLL* btree_ptr = nullptr;
-   rmi::RMI<YCSBKey, YCSBPayload> rmiindex;
-   rsindex::RadixSpline<YCSBKey> rsindex;
+   // rsindex::RadixSpline<YCSBKey> rsindex;
    std::vector<YCSBKey> mappingkeys;
 
    Benchmark()
@@ -474,12 +471,6 @@ class Benchmark
          } else if (name == "loadfastsorted") {
             write_key_trace_->Sort();
             method = &Benchmark::DoWriteFast;
-         } else if (name == "creatermi") {
-            write_key_trace_->Sort();
-            method = &Benchmark::CreateRMIIndex;
-         } else if (name == "creaters") {
-            write_key_trace_->Sort();
-            method = &Benchmark::CreateRSIndex;
          } else if (name == "genlinear") {
             thread = 1;
             method = &Benchmark::GenLinear;
@@ -532,36 +523,10 @@ class Benchmark
             read_key_trace_->Randomize();
             // read_key_trace_->Sort();
             method = &Benchmark::DoReadZipf;
-         } else if (name == "readallrs") {
-            if (!FLAGS_seq_operation)
-               read_key_trace_->Randomize();
-            method = &Benchmark::DoReadAllRS;
-         } else if (name == "readallrmi") {
-            if (!FLAGS_seq_operation)
-               read_key_trace_->Randomize();
-            method = &Benchmark::DoReadAllRMI;
          } else if (name == "readzipwithrs") {
             if (!FLAGS_seq_operation)
                read_key_trace_->Randomize();
             method = &Benchmark::DoReadUseSegmentZipf;
-         } else if (name == "readallwithrs") {
-            if (!FLAGS_seq_operation) {
-               std::cout << "Randomizing read key trace" << std::endl;
-               read_key_trace_->Randomize();
-            }
-            method = &Benchmark::DoReadAllUseRS;
-         } else if (name == "readallwithlr") {
-            if (!FLAGS_seq_operation) {
-               std::cout << "Randomizing read key trace" << std::endl;
-               read_key_trace_->Randomize();
-            }
-            method = &Benchmark::DoReadAllUseLR;
-         } else if (name == "readallwithrmi") {
-            if (!FLAGS_seq_operation) {
-               std::cout << "Randomizing read key trace" << std::endl;
-               read_key_trace_->Randomize();
-            }
-            method = &Benchmark::DoReadUseRMIAll;
          } else if (name == "readallwithseg") {
             if (!FLAGS_seq_operation) {
                std::cout << "Randomizing read key trace" << std::endl;
@@ -580,13 +545,6 @@ class Benchmark
                read_key_trace_->Randomize();
             }
             method = &Benchmark::DoReadLatWithSeg;
-         } else if (name == "readlatwithrs") {
-            print_hist = true;
-            if (!FLAGS_seq_operation) {
-               std::cout << "Randomizing read key trace" << std::endl;
-               read_key_trace_->Randomize();
-            }
-            method = &Benchmark::DoReadLatWithRs;
          } else if (name == "readnon") {
             if (!FLAGS_seq_operation) {
                std::cout << "Randomizing read key trace" << std::endl;
@@ -711,9 +669,6 @@ class Benchmark
          } else if (name == "poolstats") {
             thread = 1;
             method = &Benchmark::DoPoolStats;
-         } else if (name == "trainlr") {
-            thread = 1;
-            method = &Benchmark::DoTrainLR;
          } else if (name == "scanallasc") {
             thread = 1;
             method = &Benchmark::DoScanAllAsc;
@@ -743,12 +698,6 @@ class Benchmark
          if (method != nullptr)
             RunBenchmark(thread, name, method, print_hist);
       }
-   }
-
-   void DoTrainLR(ThreadState* thread)
-   {
-      auto& table = *adapter;
-      table.train_lr();
    }
 
    void GenRandom(ThreadState* thread)
@@ -885,135 +834,7 @@ class Benchmark
    //       printf("thread %2d num: %lu, not find: %lu found: %lu\n", thread->tid, interval, not_find, found);
    //    thread->stats.AddMessage(buf);
    // }
-   void DoReadAllUseRS(ThreadState* thread)
-   {
-      uint64_t batch = FLAGS_batch;
-      if (read_key_trace_ == nullptr) {
-         perror("DoReadAllUseLR lack key_trace_ initialization.");
-         return;
-      }
-      read_trace_size_ = read_key_trace_->keys_.size();
-      size_t interval = read_trace_size_ / FLAGS_worker_threads;
-      size_t start_offset = thread->tid * interval;
-      auto key_iterator = read_key_trace_->iterate_between(start_offset, start_offset + interval);
 
-      size_t not_find = 0;
-      size_t found = 0;
-      Duration duration(FLAGS_readtime, reads_);
-      auto& table = *adapter;
-      thread->stats.Start();
-      while (!duration.Done(batch) && key_iterator.Valid()) {
-         uint64_t j = 0;
-         for (; j < batch && key_iterator.Valid(); j++) {
-            size_t ikey = key_iterator.Next();
-            YCSBPayload result;
-            // auto ret = table.lookup_rs(ikey, result);
-            size_t value_length = 0;
-            const u8* value_ptr = nullptr;
-            auto ret = btree_ptr->fast_trained_lookup_rs(ikey, [&](const u8* value, size_t length) {
-               value_ptr = value;
-               value_length = length;
-            }) == OP_RESULT::OK;
-            // auto ret = btree_ptr->fast_trained_lookup_rs(ikey) == OP_RESULT::OK;
-            if (!ret) {
-               not_find++;
-            } else {
-               found++;
-            }
-         }
-         thread->stats.FinishedBatchOp(j);
-      }
-      char buf[100];
-      snprintf(buf, sizeof(buf), "(num: %lu, not find: %lu found: %lu)", interval, not_find, found);
-      if (not_find)
-         printf("thread %2d num: %lu, not find: %lu found: %lu\n", thread->tid, interval, not_find, found);
-      thread->stats.AddMessage(buf);
-   }
-
-   void DoReadAllUseLR(ThreadState* thread)
-   {
-      uint64_t batch = FLAGS_batch;
-      if (read_key_trace_ == nullptr) {
-         perror("DoReadAllUseLR lack key_trace_ initialization.");
-         return;
-      }
-      read_trace_size_ = read_key_trace_->keys_.size();
-      size_t interval = read_trace_size_ / FLAGS_worker_threads;
-      size_t start_offset = thread->tid * interval;
-      auto key_iterator = read_key_trace_->iterate_between(start_offset, start_offset + interval);
-
-      size_t not_find = 0;
-      size_t found = 0;
-      Duration duration(FLAGS_readtime, reads_);
-      auto& table = *adapter;
-      thread->stats.Start();
-      while (!duration.Done(batch) && key_iterator.Valid()) {
-         uint64_t j = 0;
-         for (; j < batch && key_iterator.Valid(); j++) {
-            size_t ikey = key_iterator.Next();
-            YCSBPayload result;
-            auto ret = table.lookup_lr(ikey, result);
-            if (!ret) {
-               not_find++;
-            } else {
-               found++;
-            }
-         }
-         thread->stats.FinishedBatchOp(j);
-      }
-      char buf[100];
-      snprintf(buf, sizeof(buf), "(num: %lu, not find: %lu found: %lu)", interval, not_find, found);
-      if (not_find)
-         printf("thread %2d num: %lu, not find: %lu found: %lu\n", thread->tid, interval, not_find, found);
-      thread->stats.AddMessage(buf);
-   }
-
-   void DoReadUseRMIAll(ThreadState* thread)
-   {
-      uint64_t batch = FLAGS_batch;
-      if (read_key_trace_ == nullptr) {
-         perror("DoReadUseRMIAll lack key_trace_ initialization.");
-         return;
-      }
-      read_trace_size_ = read_key_trace_->keys_.size();
-
-      size_t interval = read_trace_size_ / FLAGS_worker_threads;
-      size_t start_offset = thread->tid * interval;
-      auto key_iterator = read_key_trace_->iterate_between(start_offset, start_offset + interval);
-
-      size_t not_find = 0;
-      size_t found = 0;
-      Duration duration(FLAGS_readtime, reads_);
-      auto& table = *adapter;
-      thread->stats.Start();
-      while (!duration.Done(batch) && key_iterator.Valid()) {
-         uint64_t j = 0;
-         for (; j < batch && key_iterator.Valid(); j++) {
-            size_t ikey = key_iterator.Next();
-            YCSBPayload result;
-            // auto ret = table.lookup_rmi(ikey, result);
-            size_t value_length = 0;
-            const u8* value_ptr = nullptr;
-            auto ret = btree_ptr->fast_trained_lookup_rmi(ikey, [&](const u8* value, size_t length) {
-               value_ptr = value;
-               value_length = length;
-            }) == OP_RESULT::OK;
-            // auto ret = btree_ptr->fast_trained_lookup_rmi(ikey) == OP_RESULT::OK;
-
-            if (!ret) {
-               not_find++;
-            } else {
-               found++;
-            }
-         }
-         thread->stats.FinishedBatchOp(j);
-      }
-      char buf[100];
-      snprintf(buf, sizeof(buf), "(num: %lu, not find: %lu found: %lu)", interval, not_find, found);
-      if (not_find)
-         printf("thread %2d num: %lu, not find: %lu\n found: %lu", thread->tid, interval, not_find, found);
-      thread->stats.AddMessage(buf);
-   }
    void DoReadUseSegmentAll(ThreadState* thread)
    {
       uint64_t batch = FLAGS_batch;
@@ -1143,92 +964,6 @@ class Benchmark
       thread->stats.AddMessage(buf);
    }
 
-   void DoReadAllRMI(ThreadState* thread)
-   {
-      std::cout << "ReadAllRMI" << std::endl;
-      uint64_t batch = FLAGS_batch;
-      if (read_key_trace_ == nullptr || read_trace_size_ == 0) {
-         perror("DoReadAllRMI lack key_trace_ initialization.");
-         return;
-      }
-      read_trace_size_ = read_key_trace_->keys_.size();
-      size_t interval = read_trace_size_ / FLAGS_worker_threads;
-      size_t start_offset = thread->tid * interval;
-      auto key_iterator = read_key_trace_->iterate_between(start_offset, start_offset + interval);
-#ifdef USE_SLOT_KEYS
-      auto keys = mappingkeys;
-#else
-      auto keys = read_key_trace_->keys_;
-      std::sort(keys.begin(), keys.end());
-#endif
-      size_t not_find = 0;
-      size_t found = 0;
-      Duration duration(FLAGS_readtime, reads_);
-      thread->stats.Start();
-      while (!duration.Done(batch) && key_iterator.Valid()) {
-         uint64_t j = 0;
-         for (; j < batch && key_iterator.Valid(); j++) {
-            auto ikey = key_iterator.Next();
-            YCSBPayload result;
-            auto ret = rmiindex.get_index(ikey);
-
-            if (keys[ret] == ikey) {
-               found++;
-            } else {
-               not_find++;
-            }
-         }
-         thread->stats.FinishedBatchOp(j);
-      }
-      char buf[100];
-      snprintf(buf, sizeof(buf), "(num: %lu, not find: %lu found: %lu)", interval, not_find, found);
-      if (not_find)
-         printf("thread %2d num: %lu, not find: %lu found: %lu\n", thread->tid, interval, not_find, found);
-      thread->stats.AddMessage(buf);
-   }
-
-   void DoReadAllRS(ThreadState* thread)
-   {
-      std::cout << "ReadAllRS" << std::endl;
-      uint64_t batch = FLAGS_batch;
-      if (read_key_trace_ == nullptr || read_trace_size_ == 0) {
-         perror("DoReadAllRS lack key_trace_ initialization.");
-         return;
-      }
-      read_trace_size_ = read_key_trace_->keys_.size();
-      size_t interval = read_trace_size_ / FLAGS_worker_threads;
-      size_t start_offset = thread->tid * interval;
-      auto key_iterator = read_key_trace_->iterate_between(start_offset, start_offset + interval);
-#ifdef USE_SLOT_KEYS
-      auto keys = mappingkeys;
-#else
-      auto keys = read_key_trace_->keys_;
-      std::sort(keys.begin(), keys.end());
-#endif
-      size_t not_find = 0;
-      size_t found = 0;
-      Duration duration(FLAGS_readtime, reads_);
-      thread->stats.Start();
-      while (!duration.Done(batch) && key_iterator.Valid()) {
-         uint64_t j = 0;
-         for (; j < batch && key_iterator.Valid(); j++) {
-            auto ikey = key_iterator.Next();
-            auto ret = rsindex.find(ikey, keys);
-            if (keys[ret] == ikey) {
-               found++;
-            } else {
-               not_find++;
-            }
-         }
-         thread->stats.FinishedBatchOp(j);
-      }
-      char buf[100];
-      snprintf(buf, sizeof(buf), "(num: %lu, not find: %lu found: %lu)", interval, not_find, found);
-      if (not_find)
-         printf("thread %2d num: %lu, not find: %lu found: %lu\n", thread->tid, interval, not_find, found);
-      thread->stats.AddMessage(buf);
-   }
-
    void DoReadZipf(ThreadState* thread)
    {
       uint64_t batch = FLAGS_batch;
@@ -1306,45 +1041,6 @@ class Benchmark
       thread->stats.AddMessage(buf);
    }
 
-   void DoReadLatWithRs(ThreadState* thread)
-   {
-      if (read_key_trace_ == nullptr) {
-         perror("DoReadLatWithSeg lack key_trace_ initialization.");
-         return;
-      }
-      read_trace_size_ = read_key_trace_->keys_.size();
-
-      size_t start_offset = random() % read_trace_size_;
-      auto key_iterator = read_key_trace_->trace_at(start_offset, read_trace_size_);
-
-      size_t not_find = 0;
-      size_t found = 0;
-
-      Duration duration(FLAGS_readtime, reads_);
-      auto& table = *adapter;
-      thread->stats.Start();
-      while (!duration.Done(1) && key_iterator.Valid()) {
-         size_t ikey = key_iterator.Next();
-
-         auto time_start = NowNanos();
-         YCSBPayload result;
-         auto ret = table.lookup_rs(ikey, result);
-         auto time_duration = NowNanos() - time_start;
-
-         thread->stats.hist_.Add(time_duration);
-         if (!ret) {
-            not_find++;
-         } else {
-            found++;
-         }
-#ifdef DUMP_EACH_LATENCY
-         std::cout << "latency: " << time_duration << " key: " << ikey << std::endl;
-#endif
-      }
-      char buf[100];
-      snprintf(buf, sizeof(buf), "(num: %lu, not find: %lu found: %lu)", reads_, not_find, found);
-      thread->stats.AddMessage(buf);
-   }
    void DoReadLatWithSeg(ThreadState* thread)
    {
       if (read_key_trace_ == nullptr) {
@@ -1648,64 +1344,6 @@ class Benchmark
          thread->stats.FinishedBatchOp(j);
       }
       return;
-   }
-   void CreateRMIIndex(ThreadState* thread)
-   {
-      std::cout << "DoCreate" << std::endl;
-      if (read_key_trace_ == nullptr) {
-         perror("DoCreate lack key_trace_ initialization.");
-         return;
-      }
-#ifdef USE_SLOT_KEYS
-      if (mappingkeys.empty()) {
-         std::vector<YCSBKey> keys;
-         std::vector<PID> pids;
-         std::vector<BufferFrame*> frames;
-         btree_ptr->slot_keys(keys, pids, frames);
-         mappingkeys = keys;
-      }
-      std::vector<YCSBKey> keys = mappingkeys;
-#else
-      std::vector<YCSBKey> keys = write_key_trace_->keys_;
-#endif
-      std::vector<YCSBPayload> data;
-      for (auto i = 0; i < keys.size(); i++) {
-         YCSBPayload value;
-         data.push_back(value);
-      }
-      std::cout << "DoCreate Payload created" << std::endl;
-      std::sort(keys.begin(), keys.end());
-      rmiindex.init(keys, data);
-      rmiindex.train_rmi(FLAGS_nmodels);
-      std::cout << "DoCreate done" << std::endl;
-   }
-   void CreateRSIndex(ThreadState* thread)
-   {
-      std::cout << "DoCreate" << std::endl;
-      if (read_key_trace_ == nullptr) {
-         perror("DoCreate lack key_trace_ initialization.");
-         return;
-      }
-#ifdef USE_SLOT_KEYS
-      if (mappingkeys.empty()) {
-         std::vector<YCSBKey> keys;
-         std::vector<PID> pids;
-         std::vector<BufferFrame*> frames;
-         btree_ptr->slot_keys(keys, pids, frames);
-         mappingkeys = keys;
-      }
-      std::vector<YCSBKey> keys = mappingkeys;
-#else
-      std::vector<YCSBKey> keys = write_key_trace_->keys_;
-#endif
-      std::cout << "DoCreate Payload created" << std::endl;
-      std::sort(keys.begin(), keys.end());
-      rsindex::Builder<YCSBKey> rsb(keys.front(), keys.back());
-      for (const auto& key : keys) {
-         rsb.AddKey(key);
-      }
-      rsindex = rsb.Finalize();
-      std::cout << "DoCreate done" << std::endl;
    }
    // write data to leanstore
    void DoWrite(ThreadState* thread)

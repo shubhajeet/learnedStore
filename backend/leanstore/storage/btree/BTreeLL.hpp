@@ -11,9 +11,9 @@
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
 #include "leanstore/sync-primitives/PageGuard.hpp"
 #include "leanstore/utils/RandomGenerator.hpp"
-#include "rmi.h"
-#include "rs/builder.h"
-#include "rs/radix_spline.h"
+// #include "rmi.h"
+// #include "rs/builder.h"
+// #include "rs/radix_spline.h"
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
@@ -54,19 +54,12 @@ class BTreeLL : public BTreeInterface, public BTreeGeneric
    // -------------------------------------------------------------------------------------
    virtual OP_RESULT lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) override;
    virtual OP_RESULT lookup_simulate_long_tail(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) override;
-   virtual OP_RESULT lookup_rs(KEY key, function<void(const u8*, u16)> payload_callback) override;
-   OP_RESULT fast_trained_lookup_rs(const KEY key, function<void(const u8*, u16)> payload_callback) override;
-   OP_RESULT fast_trained_lookup_rs(const KEY key);
    virtual OP_RESULT fast_tail_lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) override;
-   OP_RESULT lookup_lr(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) override;
-   OP_RESULT lookup_lr(const KEY key, function<void(const u8*, u16)> payload_callback) override;
    virtual OP_RESULT trained_lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback);
    virtual OP_RESULT trained_lookup(KEY key, function<void(const u8*, u16)> payload_callback);
    virtual OP_RESULT fast_trained_lookup(KEY key, function<void(const u8*, u16)> payload_callback);
    OP_RESULT fast_trained_lookup_new(const KEY key, function<void(const u8*, u16)> payload_callback) override;
    OP_RESULT fast_trained_lookup_new(const KEY key);
-   OP_RESULT fast_trained_lookup_rmi(const KEY key, function<void(const u8*, u16)> payload_callback) override;
-   OP_RESULT fast_trained_lookup_rmi(const KEY key);
    virtual OP_RESULT fast_insert(u8* o_key, u16 o_key_length, u8* o_value, u16 o_value_length);
    virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length) override;
    virtual OP_RESULT updateSameSize(u8* key, u16 key_length, function<void(u8* value, u16 value_size)>, WALUpdateGenerator = {{}, {}, 0}) override;
@@ -104,7 +97,6 @@ class BTreeLL : public BTreeInterface, public BTreeGeneric
    bool train_leaf_node(HybridPageGuard<BTreeNode>& guard, size_t maxerror);
    void forced_train(const int maxerror) override;
    void fast_train(const int maxerror) override;
-   void train_lr() override;
    void scanAll();
    // -------------------------------------------------------------------------------------
    static ParentSwipHandler findParent(void* btree_object, BufferFrame& to_find);

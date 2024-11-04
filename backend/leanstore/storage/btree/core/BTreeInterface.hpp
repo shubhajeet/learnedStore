@@ -39,15 +39,15 @@ class BTreeInterface
    virtual OP_RESULT lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT lookup_simulate_long_tail(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT fast_tail_lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) = 0;
-   virtual OP_RESULT lookup_lr(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) = 0;
-   virtual OP_RESULT lookup_lr(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
-   virtual OP_RESULT fast_trained_lookup_rs(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
-   virtual OP_RESULT lookup_rs(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
+   // virtual OP_RESULT lookup_lr(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) = 0;
+   // virtual OP_RESULT lookup_lr(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
+   // virtual OP_RESULT fast_trained_lookup_rs(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
+   // virtual OP_RESULT lookup_rs(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT trained_lookup(u8* key, u16 key_length, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT trained_lookup(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT fast_trained_lookup(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT fast_trained_lookup_new(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
-   virtual OP_RESULT fast_trained_lookup_rmi(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
+   // virtual OP_RESULT fast_trained_lookup_rmi(KEY key, function<void(const u8*, u16)> payload_callback) = 0;
    virtual OP_RESULT insert(u8* key, u16 key_length, u8* value, u16 value_length) = 0;
    virtual OP_RESULT fast_insert(u8* key, u16 key_length, u8* value, u16 value_length) = 0;
    virtual OP_RESULT updateSameSize(u8* key, u16 key_length, function<void(u8* value, u16 value_size)>, WALUpdateGenerator = {{}, {}, 0}) = 0;
@@ -81,7 +81,6 @@ class BTreeInterface
    virtual void train(const int maxerror) = 0;
    virtual void fast_train(const int maxerror) = 0;
    virtual void forced_train(const int maxerror) = 0;
-   virtual void train_lr() = 0;
    virtual void stats() = 0;
 };
 // -------------------------------------------------------------------------------------

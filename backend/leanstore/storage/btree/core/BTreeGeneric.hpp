@@ -4,11 +4,9 @@
 #include "BTreeInterface.hpp"
 #include "BTreeIteratorInterface.hpp"
 #include "BTreeNode.hpp"
-#include "cachemisscounter.hpp"
-#include "counter.hpp"
 #include "flat_hash_map.hpp"
 #include "leanstore/Config.hpp"
-// #include "leanstore/compileConst.hpp"
+#include "leanstore/compileConst.hpp"
 #include "leanstore/lr/learnedIndex.hpp"
 #include "leanstore/profiling/counters/WorkerCounters.hpp"
 #include "leanstore/rs/builder.hpp"
@@ -17,10 +15,13 @@
 #include "leanstore/sync-primitives/PageGuard.hpp"
 #include "leanstore/utils/RandomGenerator.hpp"
 #include "leanstore/utils/convert.hpp"
-#include "rmi.h"
-#include "rs/radix_spline.h"
+#ifdef INSTRUMENT_CACHE_MISS
+#include "cachemisscounter.hpp"
+#endif
+#ifdef INSTRUMENT_CODE
+#include "counter.hpp"
 #include "timer.hpp"
-
+#endif
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------
@@ -55,8 +56,7 @@ class BTreeGeneric
    atomic<u64> height = 1;
    DTID dt_id;
    spline::RadixSpline<KEY> spline_predictor;
-   rsindex::RadixSpline<KEY> rs_spline_predictor;
-   rmi::RMI<KEY, BufferFrame*> rmi_predictor;
+   // rsindex::RadixSpline<KEY> rs_spline_predictor;
 
 #ifdef COMPACT_MAPPING
    std::vector<KEY> mapping_key;

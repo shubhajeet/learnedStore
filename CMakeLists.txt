@@ -54,14 +54,13 @@ endif(CYGWIN)
 # string(REGEX MATCH "cpu MHz[\\s]*:[\\s]*([0-9]+\\.[0-9]+)" CPUFREQ ${CPUINFO})
 # set(CPU_FREQUENCY ${CMAKE_MATCH_1})
 # add_compile_definitions(CPU_FREQUENCY=${CPU_FREQUENCY})
-set(MYLIBRARY_DIR ~/projects/instrumentation)
+set(MYLIBRARY_DIR ~/projects/cppInstrumentation)
 include_directories(${MYLIBRARY_DIR}/include)
 link_directories(${MYLIBRARY_DIR}/build_Release)
-
 include_directories(~/projects/flat_hash_map)
-include_directories(~/projects/RadixSpline/include)
-include_directories(~/projects/rmi/include)
 
+# include_directories(~/projects/RadixSpline/include)
+# include_directories(~/projects/rmi/include)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SPARSEHASH REQUIRED libsparsehash)
 

@@ -38,16 +38,12 @@ struct BTreeInterface {
    virtual bool lookup(Key k, Payload& v) = 0;
    virtual bool lookup_simulate_long_tail(Key k, Payload& v) = 0;
    virtual bool fast_tail_lookup(Key k, Payload& v) = 0;
-   virtual bool lookup_lr(Key k, Payload& v) = 0;
-   virtual bool lookup_rs(Key k, Payload& v) = 0;
-   virtual bool lookup_rmi(Key k, Payload& v) = 0;
    virtual bool trained_lookup(Key k, Payload& v) = 0;
    virtual void update(Key k, Payload& v) = 0;
    virtual void insert(Key k, Payload& v) = 0;
    virtual void fast_insert(Key k, Payload& v) = 0;
    virtual void train(const int maxerror) = 0;
    virtual void fast_train(const int maxerror) = 0;
-   virtual void train_lr() = 0;
    virtual void stats() = 0;
    virtual bool scan_asc_all() = 0;
    virtual bool scan_asc_all_seg() = 0;
@@ -61,7 +57,6 @@ using OP_RESULT = leanstore::storage::btree::OP_RESULT;
 template <typename Key, typename Payload>
 struct BTreeVSAdapter : BTreeInterface<Key, Payload> {
    leanstore::storage::btree::BTreeInterface& btree;
-
    BTreeVSAdapter(leanstore::storage::btree::BTreeInterface& btree) : btree(btree) {}
    bool lookup(Key k, Payload& v) override
    {
@@ -102,50 +97,6 @@ struct BTreeVSAdapter : BTreeInterface<Key, Payload> {
       // return btree.fast_tail_lookup(key_bytes, fold(key_bytes, k),
       //                               [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) == OP_RESULT::OK;
    }
-   bool lookup_lr(Key k, Payload& v) override
-   {
-      size_t value_length = 0;
-      const u8* value_ptr = nullptr;
-      return btree.lookup_lr(k, [&](const u8* payload, u16 payload_length) {
-         value_ptr = payload;
-         value_length = payload_length;
-         return payload_length;
-      }) == OP_RESULT::OK;
-      // return btree.lookup_lr(k, [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) == OP_RESULT::OK;
-      // u8 key_bytes[sizeof(Key)];
-      // return btree.lookup_lr(key_bytes, fold(key_bytes, k), [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) ==
-      //        OP_RESULT::OK;
-   }
-   bool lookup_rs(Key k, Payload& v) override
-   {
-      size_t value_length = 0;
-      const u8* value_ptr = nullptr;
-      return btree.fast_trained_lookup_rs(k, [&](const u8* payload, u16 payload_length) {
-         value_ptr = payload;
-         value_length = payload_length;
-         return payload_length;
-      }) == OP_RESULT::OK;
-      // return btree.fast_trained_lookup_rs(k, [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) == OP_RESULT::OK;
-      // return btree.lookup_rs(k, [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) == OP_RESULT::OK;
-      // u8 key_bytes[sizeof(Key)];
-      // return btree.lookup_lr(key_bytes, fold(key_bytes, k), [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) ==
-      //        OP_RESULT::OK;
-   }
-   bool lookup_rmi(Key k, Payload& v) override
-   {
-      size_t value_length = 0;
-      const u8* value_ptr = nullptr;
-      return btree.fast_trained_lookup_rmi(k, [&](const u8* payload, u16 payload_length) {
-         value_ptr = payload;
-         value_length = payload_length;
-         return payload_length;
-      }) == OP_RESULT::OK;
-      // return btree.fast_trained_lookup_rs(k, [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) == OP_RESULT::OK;
-      // return btree.lookup_rs(k, [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) == OP_RESULT::OK;
-      // u8 key_bytes[sizeof(Key)];
-      // return btree.lookup_lr(key_bytes, fold(key_bytes, k), [&](const u8* payload, u16 payload_length) { memcpy(&v, payload, payload_length); }) ==
-      //        OP_RESULT::OK;
-   }
    bool trained_lookup(Key k, Payload& v) override
    {
       size_t value_length = 0;
@@ -181,7 +132,6 @@ struct BTreeVSAdapter : BTreeInterface<Key, Payload> {
    // void fast_train(const int maxerror) override { btree.fast_train(maxerror); }
    void fast_train(const int maxerror) override { btree.forced_train(maxerror); }
    void train(const int maxerror) override { btree.train(maxerror); }
-   void train_lr() override { btree.train_lr(); }
 
    void stats() override { btree.stats(); }
 
