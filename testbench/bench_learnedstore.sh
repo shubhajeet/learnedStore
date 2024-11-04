@@ -1,4 +1,22 @@
 #!/bin/bash
+# Define functions for help message and error handling
+function help {
+  echo "Usage: $0 (load|read|inmem|readzipfian|read|hotread|clear) [CONFIG_FILE]"
+  echo "  load: Load data to LeanStore and store the trace."
+  echo "  read: Recover data from LeanStore by reading the trace."
+  echo "  inmem: Run the in-memory benchmark."
+  echo "  readzipfian: Read data using a Zipfian distribution."
+  echo "  read: Read data using a uniform random distribution."
+  echo "  hotread: Perform multiple read operations consecutively."
+  echo "  clear: Remove all related files."
+  echo "  CONFIG_FILE (optional): Path to the configuration file (defaults to in_mem.cfg)."
+}
+
+function error_exit {
+  msg="$1"
+  echo "Error: $msg" >&2
+  exit 1
+}
 
 exp=read
 conf=in_mem.cfg
@@ -13,7 +31,7 @@ else
 fi
 
 # print current command and parameters
-echo "bench_leanstore.sh $conf $exp"
+echo "bench_learnedstore.sh $conf $exp"
 echo "---------------------------"
 date
 
