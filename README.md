@@ -6,7 +6,7 @@ Install dependencies:
 
 `sudo apt-get install cmake libaio-dev libtbb-dev libsparsehash-dev`
 
-- you also need to install my instrumentation library
+- you also need to install my [instrumentation library](https://github.com/shubhajeet/cppInstrumentation) -> location: projects/instrumentation
 - some hash map library https://github.com/skarupke/flat_hash_map -> location: projects/flat_hash_map
 
 `mkdir build_Release && cd build_Release && cmake -DCMAKE_BUILD_TYPE=release .. && make -j`
