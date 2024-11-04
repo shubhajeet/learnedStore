@@ -82,4 +82,3 @@ DECLARE_string(secondary_mapping_file);
 DECLARE_string(segments_file);
 // -------------------------------------------------------------------------------------
 DECLARE_uint32(max_error);
-DECLARE_uint32(nmodels);

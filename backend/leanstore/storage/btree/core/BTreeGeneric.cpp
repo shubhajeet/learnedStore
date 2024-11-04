@@ -1,5 +1,5 @@
 #include "BTreeGeneric.hpp"
-
+#include <filesystem>
 #include "leanstore/Config.hpp"
 #include "leanstore/profiling/counters/WorkerCounters.hpp"
 #include "leanstore/storage/buffer-manager/BufferManager.hpp"
@@ -992,6 +992,18 @@ void BTreeGeneric::deserialize(BTreeGeneric& btree, std::unordered_map<std::stri
 {
    btree.dt_id = std::stol(map["dt_id"]);
    btree.height = std::stol(map["height"]);
+   auto basepath = std::filesystem::path(FLAGS_recover_file).parent_path().string();
+   auto is_relative = [](const std::string& path) { return !std::filesystem::path(path).is_absolute(); };
+   // Prepend base_path to relative paths
+   if (is_relative(map["secondary_mapping"])) {
+      map["secondary_mapping"] = basepath + "/" + map["secondary_mapping"];
+   }
+   if (is_relative(map["segments"])) {
+      map["segments"] = basepath + "/" + map["segments"];
+   }
+   if (is_relative(map["attached_segments"])) {
+      map["attached_segments"] = basepath + "/" + map["attached_segments"];
+   }
    btree.secondary_mapping_file = map["secondary_mapping"];
    btree.segments_file = map["segments"];
    btree.attached_segments_file = map["attached_segments"];

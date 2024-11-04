@@ -695,8 +695,11 @@ class Benchmark
             std::cout << "unknown benchmark " << name << std::endl;
          }
 
-         if (method != nullptr)
+         if (method != nullptr) {
+            std::cout << "start:" << name << std::endl;
             RunBenchmark(thread, name, method, print_hist);
+            std::cout << "end:" << name << std::endl;
+         }
       }
    }
 

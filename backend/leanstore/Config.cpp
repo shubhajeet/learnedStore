@@ -87,4 +87,3 @@ DEFINE_string(attached_segments_file, "./attached_segment.bin", "");
 DEFINE_string(secondary_mapping_file, "./secondary_mapping.bin", "");
 DEFINE_string(segments_file, "./segments.bin", "");
 DEFINE_uint32(max_error, 32, "max_error of the segments");
-DEFINE_uint32(nmodels, 100, "no of models in 2nd stage of RMI");

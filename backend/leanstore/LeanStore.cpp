@@ -23,6 +23,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <filesystem>
 #include <locale>
 #include <sstream>
 // -------------------------------------------------------------------------------------
@@ -35,12 +36,12 @@ namespace leanstore
 LeanStore::LeanStore()
 {
    LeanStore::addStringFlag("ssd_path", &FLAGS_ssd_path);
-   if (FLAGS_recover_file != "./leanstore.json") {
-      FLAGS_recover = true;
-   }
-   if (FLAGS_persist_file != "./leanstore.json") {
-      FLAGS_persist = true;
-   }
+   // if (FLAGS_recover_file != "./leanstore.json") {
+   //    FLAGS_recover = true;
+   // }
+   // if (FLAGS_persist_file != "./leanstore.json") {
+   //    FLAGS_persist = true;
+   // }
    if (FLAGS_recover) {
       deserializeFlags();
    }
@@ -53,6 +54,12 @@ LeanStore::LeanStore()
    int flags = O_RDWR | O_DIRECT;
    if (FLAGS_trunc) {
       flags |= O_TRUNC | O_CREAT;
+   }
+   // TODO check the basepath of recover and then add to ssd_path if it is the absolute path
+   std::filesystem::path ssd_path(FLAGS_ssd_path);
+   if (!ssd_path.is_absolute()) {
+      // Prepend base_path to FLAGS_ssd_path if it is not absolute
+      ssd_path = std::filesystem::path(FLAGS_recover_file).parent_path() / ssd_path;
    }
    ssd_fd = open(FLAGS_ssd_path.c_str(), flags, 0666);
    INFO("ssd_path: %s", FLAGS_ssd_path.c_str());
