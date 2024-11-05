@@ -1,0 +1,6 @@
+[submodule "submodules/flat_hash_map"]
+	path = submodules/flat_hash_map
+	url = https://github.com/skarupke/flat_hash_map.git
+[submodule "submodules/instrumentation"]
+	path = submodules/instrumentation
+	url = git@github.com:shubhajeet/cppInstrumentation.git
