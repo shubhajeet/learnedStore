@@ -2,12 +2,15 @@
 [LearnedStore](https://jiangs.utasites.cloud/pubs/papers/Maharjan23-LearnedStore.pdf) uses learned index to accelerate search in btree based KV database. The project has been adapted from [LeanStore](https://db.in.tum.de/~leis/papers/leanstore.pdf) commit point: [d3d83143ee74c54c901fe5431512a46965377f4e](https://github.com/leanstore/leanstore/commit/d3d83143ee74c54c901fe5431512a46965377f4e), a high-performance OLTP storage engine optimized for many-core CPUs and NVMe SSDs. 
 
 ## Compiling
+Cloning repositories and it's submodules:
+` git clone --recurse-submodules git@github.com:shubhajeet/learnedStore.git`
+
 Install dependencies:
 
 `sudo apt-get install cmake libaio-dev libtbb-dev libsparsehash-dev`
 
-- you also need to install my [instrumentation library](https://github.com/shubhajeet/cppInstrumentation) -> location: projects/instrumentation
-- some hash map library https://github.com/skarupke/flat_hash_map -> location: projects/flat_hash_map
+- you also need to install my [instrumentation library](https://github.com/shubhajeet/cppInstrumentation) -> location: submodules/instrumentation
+- some hash map library https://github.com/skarupke/flat_hash_map -> location: submodules/flat_hash_map
 
 `mkdir build_Release && cd build_Release && cmake -DCMAKE_BUILD_TYPE=release .. && make -j`
 
